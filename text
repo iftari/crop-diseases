@@ -1,0 +1,272 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import skimage
+from skimage import io
+import seaborn as sns
+
+%matplotlib inline
+
+path = r'data\Brown_spot\DSC_0100.jpg'
+image = io.imread(path)
+type(image),image.shape
+plt.imshow(image)
+
+path=r'data\Brown_spot\DSC_0100.jpg'
+image=io.imread(path,as_gray=True)
+type(image),image.shape
+plt.imshow(image)
+
+image.shape[0]*image.shape[1]
+
+
+from skimage.transform import rescale, resize
+scimg = rescale(image, 1/2)
+image.shape, scimg.shape
+
+
+resizedimg = resize(scimg, output_shape=(228,228))
+resizedimg.shape
+
+import os
+os.getcwd()
+# data\Bacterial_leaf_blight\DSC_0365.JPG
+os.listdir('data')
+os.listdir('data\Bacterial_leaf_blight')
+
+
+class Transform:
+    def __init__(self, dirs: list[str]) -> None:
+        self.from_path = 'data'
+        self.to_path = 'processed_data'
+        self.dirs = dirs
+        self.cls = {dirs[i]: i for i in range(len(dirs))}
+        self.images_path = [
+            (f'data\\{dir}\\{img}', f'processed_data\\{img.split(".")[0]}_{self.cls[dir]}.{img.split(".")[1]}') for dir in self.dirs for img in os.listdir(f'data\\{dir}')]
+        print(len(self.images_path))
+    
+    def transform(self):
+        for img, pimg in self.images_path:
+            try:
+                # Read the image in grayscale
+                image = io.imread(img, as_gray=True)
+
+                # Resize the image to (28, 28)
+                resized_img = transform.resize(image, (28, 28))
+
+                # Convert floating-point array to uint8
+                pimg_array = (resized_img * 255).astype(np.uint8)
+
+                # Save the processed image
+                io.imsave(pimg, pimg_array)
+
+            except Exception as e:
+                print(f"Error processing image {img}: {e}")
+
+        return True
+    
+for dir in ['Bacterial_leaf_blight','Brown_spot','Leaf_smut']:
+    print(f'data\\{dir}')
+
+for dir in ['Bacterial_leaf_blight', 'Brown_spot', 'Leaf_smut']:
+    for img in os.listdir(f'data\\{dir}'):
+        print(f'data\\{dir}\\{img}')
+
+for dir in ['Bacterial_leaf_blight','Brown_spot', 'Leaf_smut']:
+    for img in os.listdir(f'data\\{dir}'):
+        img_path = img.split('.')
+        img_path = img_path[0]+f'_0.'+img_path[1]
+        print((f'data\\{dir}\\{img}', f'processed_data\\{img_path}'))
+
+tf_image = Transform(['Bacterial_leaf_blight','Brown_spot', 'Leaf_smut'])
+tf_image.transform()
+
+for img,pimg in tf_image.images_path:
+    print(pimg)
+
+for img, pimg in tf_image.images_path:
+    print(img)
+
+for img, pimg in tf_image.images_path:
+    image=io.imread(pimg,as_gray=True)
+    print(pimg)
+    plt.imshow(image)
+    break
+import warnings
+warnings.filterwarnings(action='ignore')
+
+files=os.listdir(r'processed_data')
+
+
+images=[]
+for img, pimg in tf_image.images_path:
+    image=io.imread(pimg).ravel()
+    label=int(pimg.split('.')[0][-1])
+    images.append([image,label])
+
+
+np_images= np.array(images,dtype=object)
+np_images[0,0]
+type(images)
+
+images=[]
+labels=[]
+for img,pimg in tf_image.images_path:
+    image=io.imread(pimg).ravel()/255
+    label=int(pimg.split('.')[0][-1])
+    images.append(image)
+    labels.append(label)
+
+np_images[:,1]
+
+from sklearn.model_selection import train_test_split
+xtrain, xtest, ytrain, ytest = train_test_split(images,labels, test_size=0.2, random_state=1)
+
+xtrain,ytrain
+
+xtest,ytest
+
+xtrain = np.array([image for image in xtrain])
+ytrain = np.array(ytrain)
+xtrain[0]
+
+a=[pixel/255 for pixel in xtrain[0]]
+
+
+#Logistic Regression
+from sklearn.model_selection import train_test_split
+X_train,X_test,y_train,y_test=train_test_split(images,labels, test_size=0.2, random_state=1)
+
+xtest = np.array([image for image in X_train])
+ytrain = np.array(y_train)
+xtrain[0],ytrain.shape
+
+from sklearn.linear_model import LogisticRegression
+model=LogisticRegression(random_state=1)
+model.fit(xtrain,ytrain)
+
+xtest = np.array([image for image in X_test])
+y_test = np.array(y_test)
+ypred=model.predict(X_test)
+ypred
+
+
+from sklearn.datasets import make_classification
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, f1_score, accuracy_score
+from sklearn.svm import SVC
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+
+images, labels = make_classification(random_state=0)
+X_train, X_test, y_train, y_test = train_test_split(images,  labels, test_size=0.33, random_state=1)
+clf = SVC(random_state=0)
+clf.fit(X_train, y_train)
+predictions = clf.predict(X_test)
+cm = confusion_matrix(y_test, predictions, labels=clf.classes_)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=clf.classes_)
+disp.plot()
+
+plt.show()
+
+print("F1 Score:", f1_score(y_test, predictions))
+
+print("Accuracy:", accuracy_score(y_test, predictions))
+
+
+#SVM
+
+from sklearn.svm import SVC
+svm=SVC(random_state=42)
+svm.fit(xtrain,ytrain)
+
+from sklearn.svm import SVC
+clf=SVC(kernel='linear',random_state=42)
+clf.fit(xtrain,ytrain)
+
+xtest = np.array([image for image in X_test])
+y_test = np.array(y_test)
+
+from sklearn.svm import SVC
+from sklearn.metrics import confusion_matrix,ConfusionMatrixDisplay, f1_score, accuracy_score
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(images, labels, test_size=0.2, random_state=42)
+svm = SVC()
+svm.fit(X_train, y_train)
+ypred = svm.predict(X_test)
+
+ypred=svm.predict(X_test)
+ypred==y_test
+
+ypred
+
+predictions = svm.predict(X_test)
+cm = confusion_matrix(y_test, predictions)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+disp.plot()
+
+f1_score(y_test,ypred,average='weighted')
+accuracy_score(y_test, ypred)
+
+
+from joblib import dump,load
+dump(svm,'svmClassifier')
+
+import os
+from skimage import io
+
+images=[]
+labels=[]
+files=os.listdir(r'processed_data')
+for pimg in files:
+    if pimg.endswith(('.png', '.jpg', '.jpeg')):
+        image=io.imread(f'processed_data\\{pimg}').ravel()/255
+        label=int(pimg.split('.')[0][-1])
+        images.append(image)
+        labels.append(label) 
+
+print("Images and labels loaded successfully!")   
+
+images[0]
+
+images_new = np.array([image for image in images])
+Labels = np.array(labels)
+
+images_new[0]
+
+from joblib import load
+model=load('svmClassifier')
+
+model.predict(images_new)
+
+
+ValueError                                Traceback (most recent call last)
+Cell In[395], line 1
+----> 1 model.predict(images_new)
+
+File d:\Python\Projects\project\env\lib\site-packages\sklearn\svm\_base.py:813, in BaseSVC.predict(self, X)
+    811     y = np.argmax(self.decision_function(X), axis=1)
+    812 else:
+--> 813     y = super().predict(X)
+    814 return self.classes_.take(np.asarray(y, dtype=np.intp))
+
+File d:\Python\Projects\project\env\lib\site-packages\sklearn\svm\_base.py:428, in BaseLibSVM.predict(self, X)
+    412 def predict(self, X):
+    413     """Perform regression on samples in X.
+    414 
+    415     For an one-class model, +1 (inlier) or -1 (outlier) is returned.
+   (...)
+    426         The predicted values.
+    427     """
+--> 428     X = self._validate_for_predict(X)
+    429     predict = self._sparse_predict if self._sparse else self._dense_predict
+    430     return predict(X)
+
+File d:\Python\Projects\project\env\lib\site-packages\sklearn\svm\_base.py:606, in BaseLibSVM._validate_for_predict(self, X)
+    603 check_is_fitted(self)
+...
+    444         f"X has {n_features} features, but {self.__class__.__name__} "
+    445         f"is expecting {self.n_features_in_} features as input."
+    446     )
+
+ValueError: X has 784 features, but SVC is expecting 20 features as input.
+
